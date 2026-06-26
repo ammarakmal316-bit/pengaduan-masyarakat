@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layanan Pengaduan Masyarakat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: #f0ebf8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .header {
+      background: #4a148c;
+      color: white;
+      padding: 24px 32px;
+      border-radius: 8px 8px 0 0;
+      width: 100%;
+      max-width: 640px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .card {
+      background: white;
+      border-radius: 0 0 8px 8px;
+      padding: 24px 32px 32px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      margin-bottom: 20px;
+    }
+    .required-star {
+      color: #d93025;
+      margin-left: 2px;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .form-group label small {
+      font-weight: 400;
+      color: #666;
+      font-size: 12px;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 15px;
+      border: none;
+      border-bottom: 1px solid #dadce0;
+      outline: none;
+      background: transparent;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-bottom: 2px solid #4a148c;
+      padding-bottom: 9px;
+    }
+    .form-group input.error,
+    .form-group textarea.error {
+      border-bottom-color: #d93025;
+    }
+    .form-group .error-msg {
+      color: #d93025;
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .form-group .error-msg.show {
+      display: block;
+    }
+    .form-group textarea {
+      min-height: 80px;
+    }
+    .btn-submit {
+      background: #4a148c;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-submit:hover {
+      background: #6a1cb3;
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .alert {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .alert.error {
+      background: #fce8e6;
+      color: #d93025;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+    .alert.success {
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+      display: block;
+    }
+    .footer-note {
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      .header { padding: 18px 20px; }
+      .header h1 { font-size: 20px; }
+      .card { padding: 18px 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Layanan Pengaduan Masyarakat</h1>
+    <p>Silakan isi form di bawah untuk menyampaikan saran, masukan, atau keluhan</p>
+  </div>
+  <div class="card">
+    <div id="alertBox" class="alert"></div>
+    <form id="complaintForm" novalidate>
+      <div class="form-group">
+        <label for="nama">Nama Lengkap<span class="required-star">*</span></label>
+        <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+        <div class="error-msg" id="namaError">Nama lengkap wajib diisi</div>
+      </div>
+      <div class="form-group">
+        <label for="nohp">Nomor HP<span class="required-star">*</span></label>
+        <input type="tel" id="nohp" name="nohp" placeholder="Contoh: 081234567890" required>
+        <div class="error-msg" id="nohpError">Nomor HP minimal 10 digit</div>
+      </div>
+      <div class="form-group">
+        <label for="saran">Saran / Masukan</label>
+        <textarea id="saran" name="saran" placeholder="Tulis saran atau masukan Anda"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="keluhan">Keluhan<span class="required-star">*</span></label>
+        <textarea id="keluhan" name="keluhan" placeholder="Tulis keluhan Anda" required></textarea>
+        <div class="error-msg" id="keluhanError">Saran/masukan atau keluhan wajib diisi</div>
+      </div>
+      <button type="submit" class="btn-submit" id="submitBtn">Kirim</button>
+    </form>
+    <div class="footer-note">* Wajib diisi</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('complaintForm');
+    const alertBox = document.getElementById('alertBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const nama = document.getElementById('nama');
+    const nohp = document.getElementById('nohp');
+    const saran = document.getElementById('saran');
+    const keluhan = document.getElementById('keluhan');
+
+    function showAlert(msg, type) {
+      alertBox.textContent = msg;
+      alertBox.className = 'alert ' + type;
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+      document.querySelectorAll('.form-group input, .form-group textarea').forEach(el => el.classList.remove('error'));
+    }
+
+    function setError(field, errorEl) {
+      field.classList.add('error');
+      errorEl.classList.add('show');
+    }
+
+    function validate() {
+      let valid = true;
+      clearErrors();
+      showAlert('', '');
+
+      if (!nama.value.trim()) {
+        setError(nama, document.getElementById('namaError'));
+        valid = false;
+      }
+      const digits = nohp.value.replace(/[^0-9]/g, '');
+      if (digits.length < 10) {
+        setError(nohp, document.getElementById('nohpError'));
+        valid = false;
+      }
+      if (!saran.value.trim() && !keluhan.value.trim()) {
+        setError(keluhan, document.getElementById('keluhanError'));
+        valid = false;
+      }
+      return valid;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nama: nama.value.trim(),
+            nohp: nohp.value.trim(),
+            saran: saran.value.trim(),
+            keluhan: keluhan.value.trim()
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          window.location.href = '/thanks.html';
+        } else {
+          showAlert(data.error || 'Terjadi kesalahan', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Kirim';
+        }
+      } catch (err) {
+        showAlert('Gagal terhubung ke server. Coba lagi.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kirim';
+      }
+    });
+  </script>
+</body>
+</html>

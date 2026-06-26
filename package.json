@@ -1,0 +1,13 @@
+{
+  "name": "pengaduan-masyarakat",
+  "version": "1.0.0",
+  "description": "Layanan Pengaduan Masyarakat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
