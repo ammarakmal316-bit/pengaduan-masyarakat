@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Pengaduan Masyarakat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: #f0ebf8;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .header {
+      background: #4a148c;
+      color: white;
+      padding: 20px 32px;
+      border-radius: 8px 8px 0 0;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header p { font-size: 13px; opacity: 0.85; }
+    .card {
+      background: white;
+      border-radius: 0 0 8px 8px;
+      padding: 24px;
+      max-width: 960px;
+      margin: 0 auto 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .toolbar .count {
+      font-size: 14px;
+      color: #666;
+    }
+    .btn-refresh {
+      background: #4a148c;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-refresh:hover { background: #6a1cb3; }
+    .btn-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-back {
+      background: transparent;
+      color: #4a148c;
+      border: 1px solid #4a148c;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-back:hover { background: #f3e5f5; }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      background: #f5f5f5;
+      color: #333;
+      font-weight: 600;
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 2px solid #e0e0e0;
+      white-space: nowrap;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    tr:hover td { background: #fafafa; }
+    .no-data {
+      text-align: center;
+      padding: 48px 16px;
+      color: #999;
+    }
+    .no-data p { font-size: 15px; margin-bottom: 4px; }
+    .no-data small { font-size: 12px; }
+    .badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .waktu { font-size: 12px; color: #888; white-space: nowrap; }
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: #999;
+    }
+    .error-state {
+      text-align: center;
+      padding: 48px;
+      color: #d93025;
+    }
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .header { padding: 16px 18px; }
+      .header h1 { font-size: 18px; }
+      .card { padding: 14px; }
+      th, td { padding: 8px 6px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Dashboard Pengaduan Masyarakat</h1>
+    <p>Data laporan yang masuk</p>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="count" id="countLabel">Memuat data...</div>
+      <div>
+        <a href="/" class="btn-back">← Form</a>
+        <button class="btn-refresh" id="refreshBtn" onclick="loadData()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div id="loadingState" class="loading">Memuat data...</div>
+      <div id="errorState" class="error-state" style="display:none"></div>
+      <table id="dataTable" style="display:none">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama</th>
+            <th>No HP</th>
+            <th>Saran / Masukan</th>
+            <th>Keluhan</th>
+            <th>Waktu</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div id="emptyState" class="no-data" style="display:none">
+        <p>Belum ada pengaduan masuk</p>
+        <small>Link form akan muncul setelah ada data</small>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadData() {
+      const loading = document.getElementById('loadingState');
+      const errorEl = document.getElementById('errorState');
+      const table = document.getElementById('dataTable');
+      const empty = document.getElementById('emptyState');
+      const tbody = document.getElementById('tableBody');
+      const countLabel = document.getElementById('countLabel');
+      const btn = document.getElementById('refreshBtn');
+
+      loading.style.display = 'block';
+      errorEl.style.display = 'none';
+      table.style.display = 'none';
+      empty.style.display = 'none';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/submissions');
+        if (!res.ok) throw new Error('Gagal memuat data');
+        const data = await res.json();
+
+        loading.style.display = 'none';
+        btn.disabled = false;
+
+        if (data.length === 0) {
+          empty.style.display = 'block';
+          countLabel.textContent = '0 pengaduan';
+          return;
+        }
+
+        countLabel.textContent = `${data.length} pengaduan`;
+        table.style.display = 'table';
+        tbody.innerHTML = data.map((item, i) => {
+          const waktu = new Date(item.waktu).toLocaleString('id-ID', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
+          return `<tr>
+            <td>${i + 1}</td>
+            <td><strong>${escape(item.nama)}</strong></td>
+            <td>${escape(item.nohp)}</td>
+            <td>${escape(item.saran || '-')}</td>
+            <td>${escape(item.keluhan || '-')}</td>
+            <td class="waktu">${waktu}</td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        errorEl.style.display = 'block';
+        errorEl.textContent = 'Gagal memuat data. Pastikan server berjalan.';
+      }
+    }
+
+    function escape(s) {
+      if (!s) return '';
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
